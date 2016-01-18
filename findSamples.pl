@@ -17,18 +17,18 @@ my $start_time = [Time::HiRes::gettimeofday()];
 
 #******** 1. set up for downloading from Arraymap
 
-my %args 							=		@ARGV;
+my %args = @ARGV;
 
-$args{ LOC_USERID }		=		getlogin();
-$args{ LOC_ROOT }			=		'/Library/WebServer/Documents';
+$args{ LOC_USERID } = getlogin();
+$args{ LOC_ROOT } = '/Library/WebServer/Documents';
 
-$args{pgP}						=		pgSetPaths(%args);
-$args{pgV}						=		setValueDefaults();
-%args									=		pgModifyArgs(%args);
+$args{pgP} = pgSetPaths(%args);
+$args{pgV} = setValueDefaults();
+%args =	pgModifyArgs(%args);
 
-$args{ '-out' }				||=	'/Users/'.getlogin().'/Desktop/GEOupdate';
+$args{ '-out' } ||=	'/Users/'.getlogin().'/Desktop/GEOupdate';
 
-$args{pgP}->{ loc_tmpTmp } =	$args{ -out };
+$args{pgP}->{ loc_tmpTmp } = $args{ -out };
 
 ################################################################################
 
