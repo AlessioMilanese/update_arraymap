@@ -32,13 +32,13 @@ $args{pgP}->{ loc_tmpTmp } = $args{ -out };
 
 ################################################################################
 
-my $mongosamples			=		pgGetMongoCursor(
-														%args,
-														MDB				=>	'arraymap',
-														MDBCOLL		=>	'samples',
-														QUERY			=>	{},
-														FIELDS		=>	[ qw(UID PLATFORMID SERIESID) ]
-													);
+my $mongosamples = pgGetMongoCursor(
+     %args,
+     MDB => 'arraymap',
+     MDBCOLL => 'samples',
+     QUERY => {},
+     FIELDS => [ qw(UID PLATFORMID SERIESID) ]
+     );
 
 
 
@@ -46,7 +46,7 @@ my $mongosamples			=		pgGetMongoCursor(
 #******** 2. download samples/plattforms and series in Arraymap
 
 print "download all the platforms...";
-my %arraymap_platforms					=		map{ $_->{ PLATFORMID } => 1 }	(grep{ $_->{ PLATFORMID } =~ /GPL/ } @{ $mongosamples });
+my %arraymap_platforms = map{ $_->{ PLATFORMID } => 1 }	(grep{ $_->{ PLATFORMID } =~ /GPL/ } @{ $mongosamples });
 
 
 
@@ -65,13 +65,13 @@ $size = @keyss;
 print "done: $size platforms found. \n";
 
 print "download all the series...";
-my %arraymap_series						=		map{ $_->{ SERIESID } => 1 }		(grep{ $_->{ SERIESID } =~ /GSE/ } @{ $mongosamples });
+my %arraymap_series = map{ $_->{ SERIESID } => 1 } (grep{ $_->{ SERIESID } =~ /GSE/ } @{ $mongosamples });
 @keys = keys %arraymap_series;
 $size = @keys;
 print "done: $size series found. \n";
 
 print "download all the samples...";
-my %arraymap_samples						=	 	map{ $_->{ UID } => 1 } 				(grep{ $_->{ UID } =~ /GSM/ } @{ $mongosamples });
+my %arraymap_samples = map{ $_->{ UID } => 1 } (grep{ $_->{ UID } =~ /GSM/ } @{ $mongosamples });
 @keys = keys %arraymap_samples;
 $size = @keys;
 print "done: $size samples found. \n\n";
