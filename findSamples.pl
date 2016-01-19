@@ -1,3 +1,8 @@
+# Script that downloads all the samples that are not in Arraymap.
+# In order to do that we download all the samples, series and samples that are
+# already in Arraymap. After that, we download all the samples related to the
+# platform that are in Arraymap and we check which of those are not in Arraymap.
+
 #!/usr/bin/perl
 
 use lib qw(/Library/WebServer/cgi-bin);
@@ -40,9 +45,6 @@ my $mongosamples = pgGetMongoCursor(
      FIELDS => [ qw(UID PLATFORMID SERIESID) ]
      );
 
-
-
-
 #******** 2. download samples/plattforms and series in Arraymap
 
 print "download all the platforms...";
@@ -63,7 +65,7 @@ my %arraymap_samples = map{ $_->{ UID } => 1 } (grep{ $_->{ UID } =~ /GSM/ } @{ 
 $size = @arraymap_samples;
 print "done: $size samples found. \n\n";
 
-
+# calculate the time needed for the download and printing it
 my $diff = Time::HiRes::tv_interval($start_time);
 $str = sprintf ("Execution time: %.1f seconds\n", $diff);
 print $str;
@@ -78,8 +80,6 @@ print $str;
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ###############################################################################
 
-
-
 print "\n--------------------------------------------------------------------\n";
 print "FIND THE SAMPLES THAT ARE NOT IN ARRAYMAP.\n";
 print "--------------------------------------------------------------------\n\n";
@@ -89,17 +89,18 @@ my $start_time = [Time::HiRes::gettimeofday()];
 use LWP::Simple;
 use List::Util 'first';
 
-my $n_sample = 0;
+my $n_sample = 0; # total number of samples
 
-
+######### print information
 print "download the samples in GEO and check which one are already in arraymap...\n";
 @keys = keys %arraymap_platforms;
 $size = @keys;
 print "number of platform: $size\n";
 print "\n0\% |---------------------------| 100\%\n    ";
+
+# variables for printing the progress bar
 $perc = $size/30;
 $add = $perc;
-
 $contt = 0;
 
 my $filename = "new_samples.txt";
@@ -110,17 +111,17 @@ foreach my $plat (sort keys %arraymap_platforms){
 	my $GSMlist            =     [ grep{/GSM\d+/} split(/[\n\r]/,get($address))];
 
 	foreach my $sample (@$GSMlist){
-	    $GSM = substr("$sample",22);
-			my $match = 0;
-			@result = grep /$GSM/, @arraymap_samples;
+	    $gsm_id = substr("$sample",22);
+			@result = grep /$gsm_id/, @arraymap_samples; #search the $gsm_id in the samples of arraymap
 			$res = @result[0];
-			if ($res eq $GSM){
-			}else{
-				print $fh "$plat $GSM\n";
+			if ($res eq $gsm_id){
+			}else{ # if the sample is not present in arraymap, I save it
+				print $fh "$plat $gsm_id\n";
 				$n_sample = $n_sample + 1;
 			}
 	}
 
+  #printing the progress bar
   $contt = $contt + 1;
   if ($contt > $add-1){
 		$add = $add + $perc + 1;
@@ -130,6 +131,7 @@ foreach my $plat (sort keys %arraymap_platforms){
 
 close $fh;
 
+# calculate the time needed for the download and printing it
 my $diff = Time::HiRes::tv_interval($start_time);
 $mins = $diff/60;
 $hours = $mins/60;
