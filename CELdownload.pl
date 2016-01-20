@@ -1,4 +1,4 @@
-# Script that downloads a .txt file
+# Script that downloads the archive file GSM337653.CEL.gz
 
 #!/usr/bin/perl
 
