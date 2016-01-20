@@ -1,7 +1,6 @@
 # Script that downloads the archive file GSM337653.CEL.gz
 
 #!/usr/bin/perl
-
 use File::Fetch;
 
 ### build a File::Fetch object ###
