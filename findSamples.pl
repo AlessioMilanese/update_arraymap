@@ -84,10 +84,11 @@ my %arraymap_samples = map{ $_->{ UID } => 1 } (grep{ $_->{ UID } =~ /GSM/ } @{ 
 $size = @arraymap_samples;
 print "done: $size samples found. \n\n";
 
+# TODO: execution time => helper sub
+
 # calculate the time needed for the download and printing it
 my $diff = Time::HiRes::tv_interval($start_time);
-$str = sprintf ("Execution time: %.1f seconds\n", $diff);
-print $str;
+print sprintf("Execution time: %.1f seconds\n", $diff);
 
 ###############################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -132,29 +133,30 @@ foreach my $plat (sort @arraymap_platforms){
 	    my $gsm_id      =   substr("$sample",22);
 
 			if (! any { $gsm_id eq $_ } @arraymap_samples) {
+
         print $fh "$plat\t$gsm_id\n";
 				$n_sample++;
         push @{ $args{GSMLIST} }, $gsm_id;
 
-			}
-	}
+	}}
 
   #printing the progress bar
-  $contt = $contt + 1;
+  $contt++;
+
   if ($contt > $add-1){
-		$add = $add + $perc + 1;
+
+		$add              =   $add + $perc + 1;
 		print "@";
-	}
-}
+
+}}
 
 close $fh;
 
 # calculate the time needed for the download and printing it
-my $diff = Time::HiRes::tv_interval($start_time);
-$mins = $diff/60;
-$hours = $mins/60;
-$str = sprintf ("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);
-print $str;
+$diff                 =   Time::HiRes::tv_interval($start_time);
+$mins                 =   $diff/60;
+$hours                =   $mins/60;
+print sprintf("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);
 print "\nnumber of new samples: $n_sample \n\n";
 
 # metadata => GSM soft file download & file structure
@@ -163,7 +165,7 @@ print "\n--------------------------------------------------------------------\n"
 print "DOWNLOAD OF THE GSM METADATA FILES.\n";
 print "--------------------------------------------------------------------\n\n";
 
-$start_time = [Time::HiRes::gettimeofday()];
+$start_time           =   [Time::HiRes::gettimeofday()];
 
 if ($args{ '-randno' }) {
 
@@ -174,8 +176,7 @@ if ($args{ '-randno' }) {
 _d(scalar(@{ $args{GSMLIST} }), 'GSM soft files will be retrieved');
 pgGEOmetaGSM(\%args);
 
-$diff = Time::HiRes::tv_interval($start_time);
-$mins = $diff/60;
-$hours = $mins/60;
-$str = sprintf ("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);
-print $str;
+$diff                 =   Time::HiRes::tv_interval($start_time);
+$mins                 =   $diff/60;
+$hours                =   $mins/60;
+print sprintf("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);
