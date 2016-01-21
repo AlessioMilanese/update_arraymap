@@ -43,7 +43,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
       my $gseDir      =   $tmpDir.'/'.$gsm;
       if ($gse =~ /^GSE\d+?$/) {
 
-        $gseDir       =   $args->{METAROOT}.'/'.$gse;
+        $gseDir       =   $args->{ '-metaroot' }.'/'.$gse;
         mkdir $gseDir;
 
       }
