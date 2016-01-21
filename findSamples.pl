@@ -7,6 +7,8 @@
 
 use lib qw(/Library/WebServer/cgi-bin);
 use PG;
+use geometa;
+
 use File::Fetch;
 use Net::FTP;
 use Archive::Tar;
@@ -116,6 +118,7 @@ foreach my $plat (sort keys %arraymap_platforms){
 			}else{ # if the sample is not present in arraymap, I save it
 				print $fh "$plat $gsm_id\n";
 				$n_sample = $n_sample + 1;
+        push @{ $args->{GSMLIST} }, $gsm_id;
 			}
 	}
 
@@ -136,3 +139,26 @@ $hours = $mins/60;
 $str = sprintf ("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);
 print $str;
 print "\nnumber of new samples: $n_sample \n\n";
+
+# metadata => GSM soft file download & file structure
+
+print "\n--------------------------------------------------------------------\n";
+print "DOWNLOAD OF THE GSM METADATA FILES.\n";
+print "--------------------------------------------------------------------\n\n";
+
+$start_time = [Time::HiRes::gettimeofday()];
+
+if ($args{ '-randno' }) {
+
+  $args->{GSMLIST}	=	[ shuffle(@{ $args->{GSMLIST} }) ];
+  $args->{GSMLIST} 	=	[ splice(@{ $args->{GSMLIST} }, 0, $args{ '-randno' }) ];
+
+}
+_d(scalar(@{ $args->{GSMLIST} }), 'GSM soft files will be retrieved');
+pgGEOmetaGSM(\%args);
+
+$diff = Time::HiRes::tv_interval($start_time);
+$mins = $diff/60;
+$hours = $mins/60;
+$str = sprintf ("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);
+print $str;
