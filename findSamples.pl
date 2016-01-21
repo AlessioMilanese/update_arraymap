@@ -7,6 +7,8 @@
 
 use lib qw(/Library/WebServer/cgi-bin);
 use PG;
+use geometa;
+
 use File::Fetch;
 use Net::FTP;
 use Archive::Tar;
@@ -31,7 +33,7 @@ $args{pgP} = pgSetPaths(%args);
 $args{pgV} = setValueDefaults();
 %args =	pgModifyArgs(%args);
 
-$args{ '-out' } ||=	'/Users/'.getlogin().'/Desktop/GEOupdate';
+$args{ '-out' } ||=	'/Users/'.$args{ LOC_USERID }.'/Desktop/GEOupdate';
 
 $args{pgP}->{ loc_tmpTmp } = $args{ -out };
 
@@ -84,7 +86,7 @@ print "\n--------------------------------------------------------------------\n"
 print "FIND THE SAMPLES THAT ARE NOT IN ARRAYMAP.\n";
 print "--------------------------------------------------------------------\n\n";
 
-my $start_time = [Time::HiRes::gettimeofday()];
+$start_time = [Time::HiRes::gettimeofday()];
 
 use LWP::Simple;
 
@@ -92,9 +94,7 @@ my $n_sample = 0; # total number of samples
 
 ######### print information
 print "download the samples in GEO and check which one are already in arraymap...\n";
-@keys = keys %arraymap_platforms;
-$size = @keys;
-print "number of platform: $size\n";
+print "number of platform: ".(scalar keys %arraymap_platforms)."\n";
 print "\n0\% |---------------------------| 100\%\n    ";
 
 # variables for printing the progress bar
@@ -117,6 +117,7 @@ foreach my $plat (sort keys %arraymap_platforms){
 			}else{ # if the sample is not present in arraymap, I save it
 				print $fh "$plat $gsm_id\n";
 				$n_sample = $n_sample + 1;
+        push @{ $args->{GSMLIST} }, $gsm_id;
 			}
 	}
 
@@ -137,3 +138,26 @@ $hours = $mins/60;
 $str = sprintf ("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);
 print $str;
 print "\nnumber of new samples: $n_sample \n\n";
+
+# metadata => GSM soft file download & file structure
+
+print "\n--------------------------------------------------------------------\n";
+print "DOWNLOAD OF THE GSM METADATA FILES.\n";
+print "--------------------------------------------------------------------\n\n";
+
+$start_time = [Time::HiRes::gettimeofday()];
+
+if ($args{ '-randno' }) {
+
+  $args->{GSMLIST}	=	[ shuffle(@{ $args->{GSMLIST} }) ];
+  $args->{GSMLIST} 	=	[ splice(@{ $args->{GSMLIST} }, 0, $args{ '-randno' }) ];
+
+}
+_d(scalar(@{ $args->{GSMLIST} }), 'GSM soft files will be retrieved');
+pgGEOmetaGSM(\%args);
+
+$diff = Time::HiRes::tv_interval($start_time);
+$mins = $diff/60;
+$hours = $mins/60;
+$str = sprintf ("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);
+print $str;
