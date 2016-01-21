@@ -31,7 +31,7 @@ $args{pgP} = pgSetPaths(%args);
 $args{pgV} = setValueDefaults();
 %args =	pgModifyArgs(%args);
 
-$args{ '-out' } ||=	'/Users/'.getlogin().'/Desktop/GEOupdate';
+$args{ '-out' } ||=	'/Users/'.$args{ LOC_USERID }.'/Desktop/GEOupdate';
 
 $args{pgP}->{ loc_tmpTmp } = $args{ -out };
 
@@ -84,7 +84,7 @@ print "\n--------------------------------------------------------------------\n"
 print "FIND THE SAMPLES THAT ARE NOT IN ARRAYMAP.\n";
 print "--------------------------------------------------------------------\n\n";
 
-my $start_time = [Time::HiRes::gettimeofday()];
+$start_time = [Time::HiRes::gettimeofday()];
 
 use LWP::Simple;
 use List::Util 'first';
@@ -93,9 +93,7 @@ my $n_sample = 0; # total number of samples
 
 ######### print information
 print "download the samples in GEO and check which one are already in arraymap...\n";
-@keys = keys %arraymap_platforms;
-$size = @keys;
-print "number of platform: $size\n";
+print "number of platform: ".(scalar keys %arraymap_platforms)."\n";
 print "\n0\% |---------------------------| 100\%\n    ";
 
 # variables for printing the progress bar
