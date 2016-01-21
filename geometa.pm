@@ -7,13 +7,11 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 =cut
 
   my $args            =   shift;
-  $args->{METAROOT}   //= '/Users/'.getlogin().'/Desktop/GEOmeta';
+
   $args->{GSMLIST}    //= [ qw(GSM487790 GSM117207) ];
   $args->{pgP}->{ GEOlink } //= 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=';
 
-
-  mkdir $args->{METAROOT};
-  my $tmpDir          =   $args->{METAROOT}.'/tmp';
+  my $tmpDir          =   $args->{ '-metaroot' }.'/tmp';
   mkdir $tmpDir;
 
   foreach my $gsm (@{ $args->{GSMLIST} }) {
@@ -23,7 +21,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 
     if (! -f $file) {
 
-  		_d($url);
+  		_d($file);
 
   		my $status			=		getstore($url, $file);
   		_d("no file could be fetched") unless is_success($status);
