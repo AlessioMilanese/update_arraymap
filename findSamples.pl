@@ -87,7 +87,6 @@ print "--------------------------------------------------------------------\n\n"
 my $start_time = [Time::HiRes::gettimeofday()];
 
 use LWP::Simple;
-use List::Util 'first';
 
 my $n_sample = 0; # total number of samples
 
