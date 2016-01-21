@@ -1,5 +1,5 @@
-# Script that downloads the archive file GSM337653.CEL.gz
-# and extract the CEL file from the .gz archive file
+# Script that downloads the archive file GSM337653.CEL.gz and
+# extract the CEL file from the .gz archive file
 
 #!/usr/bin/perl
 use File::Fetch;
