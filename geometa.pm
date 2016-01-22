@@ -14,14 +14,15 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
   my $tmpDir          =   $args->{ '-metaroot' }.'/tmp';
   mkdir $tmpDir;
 
-  foreach my $gsm (@{ $args->{GSMLIST} }) {
+  for my $i (0..$#{ $args->{GSMLIST} }) {
 
+    my $gsm           =   $args->{GSMLIST}->[$i];
     my $url						=		$args->{pgP}->{ GEOlink }.$gsm.'&form=text';
     my $file					=		$tmpDir.'/'.$gsm.'.geometa.soft';
 
     if (! -f $file) {
 
-  		_d($file);
+  		_d('trying '.$gsm.' ('.($i+1).'/'.@{ $args->{GSMLIST} }.')');
 
   		my $status			=		getstore($url, $file);
   		_d("no file could be fetched") unless is_success($status);
