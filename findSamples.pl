@@ -162,7 +162,7 @@ if ($args{ '-randno' }) {
   $args{GSMLIST}	  =   [ shuffle(@{ $args{GSMLIST} }) ];
   $args{GSMLIST} 	  =   [ splice(@{ $args{GSMLIST} }, 0, $args{ '-randno' }) ];
 
-  print "\n-randno: number of random new samples: ".(scalar @{ $args{GSMLIST} })" \n\n";
+  print "\n-randno: number of random new samples: ".(scalar @{ $args{GSMLIST} })." \n\n";
 
 }
 
@@ -209,5 +209,5 @@ if ($args{ '-getmeta' } > 0) {
   );
 
   _d('wrote', $args{ '-dataroot' }.'/gsmdata.tab');
-  
+
 }
