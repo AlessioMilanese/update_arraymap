@@ -36,7 +36,7 @@ $args{ LOC_ROOT }     =   '/Library/WebServer/Documents';
 
 $args{ '-dataroot' }  //=	'/Users/'.$args{ LOC_USERID }.'/Desktop/GEOupdate';
 $args{ '-metaroot' }  //=	'/Users/'.$args{ LOC_USERID }.'/Desktop/GEOmeta';
-$args{ '-metaroot' }  //= 'n';
+$args{ '-arraymap' }  //= 'n';
 $args{ '-getmeta' }   //= 'y';
 $args{ '-randno' }    //= -1;
 $args{ '-randpf' }    //= -1;
@@ -82,12 +82,37 @@ print "-randpf: ".scalar(@arraymapPlatforms)." platforms will be used. \n";
 # $size = @arraymap_series;
 # print "done: $size series found. \n";
 
-print "get all arrayMap sampleids...";
+################################################################################
+#
+# arraymap sample filtering
+#
+################################################################################
 
-my @arraymapSamples   =   map{ $_->{ UID } } (grep{ $_->{ UID } =~ /^GSM/ } @{ $mongoSamples });
-@arraymapSamples      =   uniq(@arraymapSamples);
+=for comment
 
-print "done: ".scalar(@arraymapSamples)." samples found. \n\n";
+The next part first creates an empty array for array ids, which will later be
+matched against the new retrievals.
+If the parameter '-arraymap' is set to "y" (default is "n"), then the array will
+be populated with the existing array ids from arraymap.
+
+=cut
+
+my @arraymapSamples   =   ();
+
+if ($args{ '-arraymap' } !~ /y/) {
+
+  print "\n--------------------------------------------------------------------\n";
+  print "RETRIEVAL OF ARRAYMAP IDS FOR EXCLUSION.\n";
+  print "--------------------------------------------------------------------\n\n";
+
+  print "getting existing arrayMap array ids...";
+
+  my @arraymapSamples   =   map{ $_->{ UID } } (grep{ $_->{ UID } =~ /^GSM/ } @{ $mongoSamples });
+  @arraymapSamples      =   uniq(@arraymapSamples);
+
+  print "done: ".scalar(@arraymapSamples)." arrays found. These will not be retrieved again.\n\n";
+
+}
 
 # TODO: execution time => helper sub
 
@@ -95,19 +120,15 @@ print "done: ".scalar(@arraymapSamples)." samples found. \n\n";
 my $diff              =   Time::HiRes::tv_interval($start_time);
 print sprintf("Execution time: %.1f seconds\n", $diff);
 
-###############################################################################
+################################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-###############################################################################
+################################################################################
 #~~~~~~~~~~~~
 #############                           PART 2
 #~~~~~~~~~~~~
-###############################################################################
+################################################################################
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-###############################################################################
-
-print "\n--------------------------------------------------------------------\n";
-print "FIND THE SAMPLES THAT ARE NOT IN ARRAYMAP.\n";
-print "--------------------------------------------------------------------\n\n";
+################################################################################
 
 $start_time           =   [Time::HiRes::gettimeofday()];
 
