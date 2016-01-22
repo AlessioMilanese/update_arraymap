@@ -41,7 +41,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
                             GPL   =>  'NA',
                             URL   =>  $url,
                             FILE  =>  'NA',
-                          }
+                          };
 
     if (-f $file) {
 
