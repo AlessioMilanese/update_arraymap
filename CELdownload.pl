@@ -76,10 +76,12 @@ print "done\n";
 
 my @GSM_to_download;
 my $n_sample = 0;
+my $n_tot_sample = 0;
 
 print "\nfind the samples ID that we need to download...";
 
 foreach my $sample (@$GSMlist){
+    $n_tot_sample = $n_tot_sample + 1;
     $gsm_id = substr("$sample",22);
     @result = grep /$gsm_id/, @arraymap_samples; #search the $gsm_id in the samples of arraymap
     $res = @result[0];
@@ -91,15 +93,29 @@ foreach my $sample (@$GSMlist){
 }
 
 print "done\n";
+print "number of samples of this platform: $n_tot_sample\n";
+print "number of new samples: $n_sample\n";
 
 ################################################################################
 
 print "\nDownload the CEL files:\n";
 
+my $n_data_avaiable = 0;
+my $n_data_not_avaiable = 0;
+my $contatore = 1;
+
 foreach my $sample (@GSM_to_download){
 
 ######################       DOWNLOAD THE .CEL.GZ FILE
-print "$sample: download .CEL.gz...";
+print "($contatore/$n_sample)$sample: download .CEL.gz...";
+$contatore = $contatore + 1;
+
+#check if the file exists
+#!Sample_supplementary_file = ftp
+my $address = "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=$sample&targ=self&view=brief&form=text";
+my $info = [ grep{/!Sample_supplementary_file = ftp/} split(/[\n\r]/,get($address))];
+
+if (@$info) { #if a ftp link exists
 
 #prepare name for the directory of the ftp server (example GSM337nnn)
 $sample_short = substr("$sample",0,length($sample)-3);
@@ -111,9 +127,9 @@ my $ff = File::Fetch->new(uri => "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/$direct
 mkdir $plat;
 
 my $where = $ff->fetch()or die $ff->error;
-
+print "done";
 ######################       EXTRACT THE .CEL FILE
-print "\n         extract the .CEL file...";
+print "\n           extract the .CEL file...";
 
 ### build an Archive::Extract object ###
 my $ae = Archive::Extract->new( archive => "$sample.CEL.gz" );
@@ -121,9 +137,24 @@ my $ae = Archive::Extract->new( archive => "$sample.CEL.gz" );
 my $ok = $ae->extract or die $ae->error;
 
 `mv "$sample.CEL" $plat`;
-
+print "done";
 ######################       NOW THAT I HAVE .CEL FILE, I DELETE .GZ FILE
-print "\n         delete .gz file...";
+print "\n           delete .gz file...";
 
 unlink "$sample.CEL.gz" or warn "Could not unlink $sample.CEL.gz";
+print "done\n";
+
+$n_data_avaiable = $n_data_avaiable  + 1;
+
+} else { # @a is empty
+  print "no data avaible. \n";
+  $n_data_not_avaiable = $n_data_not_avaiable  + 1;
 }
+}
+
+#### print summary
+print "\nANALYSIS OF $plat:\n\n";
+print "number of samples of this platform: $n_tot_sample\n";
+print "number of new samples: $n_sample\n";
+print "number of .CEL files downloaded: $n_data_avaiable\n";
+print "number of samples without data: $n_data_not_avaiable\n\n";
