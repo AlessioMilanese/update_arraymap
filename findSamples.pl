@@ -178,7 +178,7 @@ print sprintf("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);
 #
 ################################################################################
 
-if ($args{ '-getmeta' } > 0) {
+if ($args{ '-getmeta' } !~ /^n/i) {
 
   print "\n------------------------------------------------------------------\n";
   print "DOWNLOAD OF THE GSM METADATA FILES.\n";
