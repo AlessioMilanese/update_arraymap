@@ -231,4 +231,14 @@ if ($args{ '-getmeta' } !~ /^n/i) {
 
   _d('wrote', $args{ '-dataroot' }.'/gsmdata.tab');
 
+  if (
+    $args{ '-randno' } < 1
+    &&
+    $args{ '-randpf' } < 1
+  ) {
+
+    copy($args{ '-dataroot' }.'/gsmdata.tab', $args{ '-dataroot' }.'/gsmdata_'._formatDay().'_'.@{ $args{GSMLIST} }.'.tab');
+
+  }
+
 }
