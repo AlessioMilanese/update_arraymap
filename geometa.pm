@@ -69,7 +69,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 
       if ($gpl =~ /^GPL\d+?$/) {
 
-        $gsmData->{ $gsm }->{GLP} =   $gpl;
+        $gsmData->{ $gsm }->{GPL} =   $gpl;
 
       }
 
