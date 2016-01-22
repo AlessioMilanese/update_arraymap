@@ -187,11 +187,27 @@ if ($args{ '-getmeta' } > 0) {
   $start_time         =   [Time::HiRes::gettimeofday()];
 
   _d(scalar(@{ $args{GSMLIST} }), 'GSM soft files will be retrieved');
-  pgGEOmetaGSM(\%args);
+  my $gsmData         =   pgGEOmetaGSM(\%args);
 
   $diff               =   Time::HiRes::tv_interval($start_time);
   $mins               =   $diff/60;
   $hours              =   $mins/60;
   print sprintf("\n\nMetadata download time: %.0f minutes (%.1f hours)\n", $mins, $hours);
 
+  my @gsmKeys         =   sort keys $gsmData->{$args{GSMLIST}->[0]};
+  my @gsmTable        =   join("\t", @gsmKeys);
+
+  foreach my $gsm (sort @{ $args{GSMLIST} }) {
+
+    push(@gsmTable, join("\t", @{ $gsmData->{$gsm} }{ @gsmKeys }));
+
+  }
+
+  pgWriteFile(
+  	FILE					    =>	$args{ '-dataroot' }.'/gsmdata.tab',
+  	CONTENT					  =>	join("\n", @gsmTable),
+  );
+
+  _d('wrote', $args{ '-dataroot' }.'/gsmdata.tab');
+  
 }
