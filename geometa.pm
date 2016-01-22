@@ -14,19 +14,34 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
   my $tmpDir          =   $args->{ '-metaroot' }.'/tmp';
   mkdir $tmpDir;
 
-  foreach my $gsm (@{ $args->{GSMLIST} }) {
+  my $gsmData      =   {};
 
+  for my $i (0..$#{ $args->{GSMLIST} }) {
+
+    my $gsm           =   $args->{GSMLIST}->[$i];
     my $url						=		$args->{pgP}->{ GEOlink }.$gsm.'&form=text';
     my $file					=		$tmpDir.'/'.$gsm.'.geometa.soft';
 
-    if (! -f $file) {
+    if (
+      ! -f $file
+      ||
+      $args->{ '-force' } =~ /^y/
+    ) {
 
-  		_d($file);
+  		_d('trying '.$gsm.' ('.($i+1).'/'.@{ $args->{GSMLIST} }.')');
 
   		my $status			=		getstore($url, $file);
   		_d("no file could be fetched") unless is_success($status);
 
   	}
+
+    $gsmData->{ $gsm }=   {
+                            GSM   =>  $gsm,
+                            GSE   =>  'NA',
+                            GPL   =>  'NA',
+                            URL   =>  $url,
+                            FILE  =>  'NA',
+                          };
 
     if (-f $file) {
 
@@ -37,19 +52,33 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 														)
 													};
 
-      my $gse         =   ( grep{ /Sample_series_id \= GSE\d+/ } @metaLines )[0];
+      my $gse         =   ( grep{ /Sample_series_id ?\= ?GSE\d+/ } @metaLines )[0];
       $gse            =~  s/^.*(GSE\d+?)[^\d]*?$/\1/;
-
       my $gseDir      =   $tmpDir.'/'.$gsm;
+
       if ($gse =~ /^GSE\d+?$/) {
 
-        $gseDir       =   $args->{METAROOT}.'/'.$gse;
+        $gseDir       =   $args->{ '-metaroot' }.'/'.$gse;
         mkdir $gseDir;
+        $gsmData->{ $gsm }->{GSE} =   $gse;
 
       }
-      my  $gsmDir     =   $gseDir.'/'.$gsm;
+
+      my $gpl         =   ( grep{ /Sample_platform_id ?\= ?GPL\d+/ } @metaLines )[0];
+      $gpl            =~  s/^.*(GPL\d+?)[^\d]*?$/\1/;
+
+      if ($gpl =~ /^GPL\d+?$/) {
+
+        $gsmData->{ $gsm }->{GPL} =   $gpl;
+
+      }
+
+      my $gsmDir      =   $gseDir.'/'.$gsm;
+      my $gsmSoft     =   $gsmDir.'/geometa.soft';
       mkdir $gsmDir;
-      copy($file, $gsmDir.'/geometa.soft');
+      copy($file, $gsmSoft);
+
+      $gsmData->{ $gsm }->{FILE}  =   $gsmSoft;
 
   	} else {
 
@@ -61,6 +90,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 
   }
 
+  return $gsmData;
 
 }
 
