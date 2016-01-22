@@ -119,7 +119,7 @@ print "number of platforms: ".(scalar @arraymapPlatforms)."\n";
 print "\n0\% |---------------------------| 100\%\n    ";
 
 # variables for printing the progress bar
-my $perc              =   $size/30;
+my $perc              =   scalar(@arraymapPlatforms) / 30;
 my $add               =   $perc;
 my $contt             =   0;
 my $sampleLogFile     =   $args{ '-dataroot' }."/new_samples.txt";
@@ -159,8 +159,8 @@ print "\nnumber of new samples: $n_sample \n\n";
 
 if ($args{ '-randno' }) {
 
-  $args{GSMLIST}	  =   [ shuffle(@{ $args{GSMLIST} }) ];
-  $args{GSMLIST} 	  =   [ splice(@{ $args{GSMLIST} }, 0, $args{ '-randno' }) ];
+  $args{GSMLIST}      =   [ shuffle(@{ $args{GSMLIST} }) ];
+  $args{GSMLIST}      =   [ splice(@{ $args{GSMLIST} }, 0, $args{ '-randno' }) ];
 
   print "\n-randno: number of random new samples: ".(scalar @{ $args{GSMLIST} })." \n\n";
 
