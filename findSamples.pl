@@ -25,7 +25,7 @@ print "\n--------------------------------------------------------------------\n"
 print "FIND THE SAMPLES/SERIES/PLATTFORMS IN ARRAYMAP.\n";
 print "--------------------------------------------------------------------\n\n";
 
-my $start_time = [Time::HiRes::gettimeofday()];
+my $start_time        =   [Time::HiRes::gettimeofday()];
 
 #******** 1. set up for downloading from Arraymap
 
@@ -34,12 +34,16 @@ my %args              =   @ARGV;
 $args{ LOC_USERID }   =   getlogin();
 $args{ LOC_ROOT }     =   '/Library/WebServer/Documents';
 
+$args{ '-dataroot' }  //=	'/Users/'.$args{ LOC_USERID }.'/Desktop/GEOupdate';
+$args{ '-metaroot' }  //=	'/Users/'.$args{ LOC_USERID }.'/Desktop/GEOmeta';
+$args{ '-metaroot' }  //= 'n';
+$args{ '-getmeta' }   //= 'y';
+$args{ '-randno' }    //= -1;
+$args{ '-randpf' }    //= -1;
+
 $args{pgP}            =   pgSetPaths(%args);
 $args{pgV}            =   setValueDefaults();
 %args                 =	  pgModifyArgs(%args);
-
-$args{ '-dataroot' }  //=	'/Users/'.$args{ LOC_USERID }.'/Desktop/GEOupdate';
-$args{ '-metaroot' }  //=	'/Users/'.$args{ LOC_USERID }.'/Desktop/GEOmeta';
 
 ################################################################################
 
@@ -48,7 +52,7 @@ mkdir $args{ '-metaroot' };
 
 ################################################################################
 
-my $mongosamples      =   pgGetMongoCursor(
+my $mongoSamples      =   pgGetMongoCursor(
                            %args,
                            MDB      => 'arraymap',
                            MDBCOLL  => 'samples',
@@ -59,35 +63,36 @@ my $mongosamples      =   pgGetMongoCursor(
 #******** 2. download samples/plattforms and series in Arraymap
 
 print "download all the platforms...";
-my @arraymap_platforms =  map{ $_->{ PLATFORMID } }	(grep{ $_->{ PLATFORMID } =~ /GPL/ } @{ $mongosamples });
-@arraymap_platforms   =   uniq(@arraymap_platforms);
-print "done: ".scalar(@arraymap_platforms)." platforms found. \n";
+my @arraymapPlatforms =   map{ $_->{ PLATFORMID } }	(grep{ $_->{ PLATFORMID } =~ /GPL/ } @{ $mongoSamples });
+@arraymapPlatforms    =   uniq(@arraymapPlatforms);
+print "done: ".scalar(@arraymapPlatforms)." platforms found. \n";
 
 if ($args{ '-randpf' } > 0) {
 
-  @arraymap_platforms =   shuffle(@arraymap_platforms);
-  @arraymap_platforms =   splice(@arraymap_platforms, 0, $args{ '-randpf' });
+  @arraymapPlatforms  =   shuffle(@arraymapPlatforms);
+  @arraymapPlatforms  =   splice(@arraymapPlatforms, 0, $args{ '-randpf' });
 
 }
 
-print "-randpf: ".scalar(@arraymap_platforms)." platforms will be used. \n";
+print "-randpf: ".scalar(@arraymapPlatforms)." platforms will be used. \n";
 
 # print "download all the series...";
-# my %arraymap_series = map{ $_->{ SERIESID } => 1 } (grep{ $_->{ SERIESID } =~ /GSE/ } @{ $mongosamples });
+# my %arraymap_series = map{ $_->{ SERIESID } => 1 } (grep{ $_->{ SERIESID } =~ /GSE/ } @{ $mongoSamples });
 # @arraymap_series = keys %arraymap_series;
 # $size = @arraymap_series;
 # print "done: $size series found. \n";
 
 print "get all arrayMap sampleids...";
-my %arraymap_samples = map{ $_->{ UID } => 1 } (grep{ $_->{ UID } =~ /GSM/ } @{ $mongosamples });
-@arraymap_samples = keys %arraymap_samples;
-$size = @arraymap_samples;
-print "done: $size samples found. \n\n";
+
+my @arraymapSamples   =   map{ $_->{ UID } } (grep{ $_->{ UID } =~ /^GSM/ } @{ $mongoSamples });
+@arraymapSamples      =   uniq(@arraymapSamples);
+
+print "done: ".scalar(@arraymapSamples)." samples found. \n\n";
 
 # TODO: execution time => helper sub
 
 # calculate the time needed for the download and printing it
-my $diff = Time::HiRes::tv_interval($start_time);
+my $diff              =   Time::HiRes::tv_interval($start_time);
 print sprintf("Execution time: %.1f seconds\n", $diff);
 
 ###############################################################################
@@ -106,13 +111,11 @@ print "--------------------------------------------------------------------\n\n"
 
 $start_time           =   [Time::HiRes::gettimeofday()];
 
-use LWP::Simple;
-
 my $n_sample          =   0; # total number of samples
 
 ######### print information
 print "download the samples in GEO and check which one are already in arraymap...\n";
-print "number of platform: ".(scalar keys %arraymap_platforms)."\n";
+print "number of platforms: ".(scalar @arraymapPlatforms)."\n";
 print "\n0\% |---------------------------| 100\%\n    ";
 
 # variables for printing the progress bar
@@ -123,7 +126,7 @@ my $sampleLogFile     =   $args{ '-dataroot' }."/new_samples.txt";
 
 open(my $fh, '>', $sampleLogFile) or die "Could not open file '$sampleLogFile' $!";
 
-foreach my $plat (sort @arraymap_platforms){
+foreach my $plat (sort @arraymapPlatforms){
 
 	my $url             =   "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=$plat&targ=self&view=brief&form=text";
 	my $GSMlist         =   [ grep{/GSM\d+/} split(/[\n\r]/,get($url))];
@@ -132,7 +135,7 @@ foreach my $plat (sort @arraymap_platforms){
 
 	    my $gsm_id      =   substr("$sample",22);
 
-			if (! any { $gsm_id eq $_ } @arraymap_samples) {
+			if (! any { $gsm_id eq $_ } @arraymapSamples) {
 
         print $fh "$plat\t$gsm_id\n";
 				$n_sample++;
@@ -152,31 +155,43 @@ foreach my $plat (sort @arraymap_platforms){
 
 close $fh;
 
+print "\nnumber of new samples: $n_sample \n\n";
+
+if ($args{ '-randno' }) {
+
+  $args{GSMLIST}	  =   [ shuffle(@{ $args{GSMLIST} }) ];
+  $args{GSMLIST} 	  =   [ splice(@{ $args{GSMLIST} }, 0, $args{ '-randno' }) ];
+
+  print "\n-randno: number of random new samples: ".(scalar @{ $args{GSMLIST} })" \n\n";
+
+}
+
 # calculate the time needed for the download and printing it
 $diff                 =   Time::HiRes::tv_interval($start_time);
 $mins                 =   $diff/60;
 $hours                =   $mins/60;
 print sprintf("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);
-print "\nnumber of new samples: $n_sample \n\n";
 
+################################################################################
+#
 # metadata => GSM soft file download & file structure
+#
+################################################################################
 
-print "\n--------------------------------------------------------------------\n";
-print "DOWNLOAD OF THE GSM METADATA FILES.\n";
-print "--------------------------------------------------------------------\n\n";
+if ($args{ '-getmeta' } > 0) {
 
-$start_time           =   [Time::HiRes::gettimeofday()];
+  print "\n------------------------------------------------------------------\n";
+  print "DOWNLOAD OF THE GSM METADATA FILES.\n";
+  print "------------------------------------------------------------------\n\n";
 
-if ($args{ '-randno' }) {
+  $start_time         =   [Time::HiRes::gettimeofday()];
 
-  $args{GSMLIST}	    =   [ shuffle(@{ $args{GSMLIST} }) ];
-  $args{GSMLIST} 	    =   [ splice(@{ $args{GSMLIST} }, 0, $args{ '-randno' }) ];
+  _d(scalar(@{ $args{GSMLIST} }), 'GSM soft files will be retrieved');
+  pgGEOmetaGSM(\%args);
+
+  $diff               =   Time::HiRes::tv_interval($start_time);
+  $mins               =   $diff/60;
+  $hours              =   $mins/60;
+  print sprintf("\n\nMetadata download time: %.0f minutes (%.1f hours)\n", $mins, $hours);
 
 }
-_d(scalar(@{ $args{GSMLIST} }), 'GSM soft files will be retrieved');
-pgGEOmetaGSM(\%args);
-
-$diff                 =   Time::HiRes::tv_interval($start_time);
-$mins                 =   $diff/60;
-$hours                =   $mins/60;
-print sprintf("\n\nExecution time: %.0f minutes (%.1f hours)\n", $mins, $hours);

@@ -20,7 +20,11 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
     my $url						=		$args->{pgP}->{ GEOlink }.$gsm.'&form=text';
     my $file					=		$tmpDir.'/'.$gsm.'.geometa.soft';
 
-    if (! -f $file) {
+    if (
+      ! -f $file
+      ||
+      $args->{ '-force' } =~ /^y/
+    ) {
 
   		_d('trying '.$gsm.' ('.($i+1).'/'.@{ $args->{GSMLIST} }.')');
 
@@ -40,8 +44,8 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 
       my $gse         =   ( grep{ /Sample_series_id \= GSE\d+/ } @metaLines )[0];
       $gse            =~  s/^.*(GSE\d+?)[^\d]*?$/\1/;
-
       my $gseDir      =   $tmpDir.'/'.$gsm;
+
       if ($gse =~ /^GSE\d+?$/) {
 
         $gseDir       =   $args->{ '-metaroot' }.'/'.$gse;
@@ -61,7 +65,6 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
   	my $metaParsed		=		$sampleDir.'/meta.tab';
 
   }
-
 
 }
 
