@@ -25,17 +25,11 @@ $plat=$ARGV[0];
 
 print "DOWNLOADING .CEL FILES OF THE PLATFORM $plat\n";
 
-###############################################################################
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-###############################################################################
-#~~~~~~~~~~~~
-#############     FIND THE SAMPLES THAT ARE NOT PRESENT IN ARRAYMAP
-#~~~~~~~~~~~~
-###############################################################################
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-###############################################################################
+################################################################################
+##############  download the samples that are already in arraymap
+################################################################################
 
-printf "\ndownload of samples in arraymap...";
+printf "\ndownload of samples IDs that are already in arraymap...";
 
 my %args = @ARGV;
 
@@ -49,8 +43,6 @@ $args{pgV} = setValueDefaults();
 $args{ '-out' } ||=	'/Users/'.getlogin().'/Desktop/GEOupdate';
 
 $args{pgP}->{ loc_tmpTmp } = $args{ -out };
-
-################################################################################
 
 my $mongosamples = pgGetMongoCursor(
      %args,
@@ -66,6 +58,8 @@ my %arraymap_samples = map{ $_->{ UID } => 1 } (grep{ $_->{ UID } =~ /GSM/ } @{ 
 printf "done\n";
 
 ################################################################################
+##############  download the information of the platform on the website
+################################################################################
 
 print "\ndownload the data of the platform...";
 
@@ -73,6 +67,10 @@ my $address = "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=$plat&targ=self
 my $GSMlist = [ grep{/GSM\d+/} split(/[\n\r]/,get($address))];
 
 print "done\n";
+
+################################################################################
+##############  find the samples ID that we need to download
+################################################################################
 
 my @GSM_to_download;
 my $n_sample = 0;
@@ -97,6 +95,8 @@ print "number of samples of this platform: $n_tot_sample\n";
 print "number of new samples: $n_sample\n";
 
 ################################################################################
+##############  download the .CEL files
+################################################################################
 
 print "\nDownload the CEL files:\n";
 
@@ -106,53 +106,54 @@ my $contatore = 1;
 
 foreach my $sample (@GSM_to_download){
 
-######################       DOWNLOAD THE .CEL.GZ FILE
-print "($contatore/$n_sample)$sample: download .CEL.gz...";
-$contatore = $contatore + 1;
+  ######################       DOWNLOAD THE .CEL.GZ FILE
+  print "($contatore/$n_sample)$sample: download .CEL.gz...";
+  $contatore = $contatore + 1;
 
-#check if the file exists
-#!Sample_supplementary_file = ftp
-my $address = "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=$sample&targ=self&view=brief&form=text";
-my $info = [ grep{/!Sample_supplementary_file = ftp/} split(/[\n\r]/,get($address))];
+  #check if the file exists
+  my $address = "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=$sample&targ=self&view=brief&form=text";
+  my $info = [ grep{/!Sample_supplementary_file = ftp/} split(/[\n\r]/,get($address))];
 
-if (@$info) { #if a ftp link exists
+  if (@$info) { #if a ftp link exists
 
-#prepare name for the directory of the ftp server (example GSM337nnn)
-$sample_short = substr("$sample",0,length($sample)-3);
-$directory_name = $sample_short . "nnn";
+      #prepare name for the directory of the ftp server (example GSM337nnn)
+      $sample_short = substr("$sample",0,length($sample)-3);
+      $directory_name = $sample_short . "nnn";
 
-### build a File::Fetch object ###
-my $ff = File::Fetch->new(uri => "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/$directory_name/$sample/suppl/$sample.CEL.gz");
-### fetch the uri to cwd() ###
-mkdir $plat;
+      ### build a File::Fetch object ###
+      my $ff = File::Fetch->new(uri => "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/$directory_name/$sample/suppl/$sample.CEL.gz");
+      ### fetch the uri to cwd() ###
+      mkdir $plat;
 
-my $where = $ff->fetch()or die $ff->error;
-print "done";
-######################       EXTRACT THE .CEL FILE
-print "\n           extract the .CEL file...";
+      my $where = $ff->fetch()or die $ff->error;
+      print "done";
+      ######################       EXTRACT THE .CEL FILE
+      print "\n           extract the .CEL file...";
 
-### build an Archive::Extract object ###
-my $ae = Archive::Extract->new( archive => "$sample.CEL.gz" );
-### extract to cwd() ###
-my $ok = $ae->extract or die $ae->error;
+      ### build an Archive::Extract object ###
+      my $ae = Archive::Extract->new( archive => "$sample.CEL.gz" );
+      ### extract to cwd() ###
+      my $ok = $ae->extract or die $ae->error;
 
-`mv "$sample.CEL" $plat`;
-print "done";
-######################       NOW THAT I HAVE .CEL FILE, I DELETE .GZ FILE
-print "\n           delete .gz file...";
+      `mv "$sample.CEL" $plat`;
+      print "done";
+      ######################       NOW THAT I HAVE .CEL FILE, I DELETE .GZ FILE
+      print "\n           delete .gz file...";
 
-unlink "$sample.CEL.gz" or warn "Could not unlink $sample.CEL.gz";
-print "done\n";
+      unlink "$sample.CEL.gz" or warn "Could not unlink $sample.CEL.gz";
+      print "done\n";
 
-$n_data_avaiable = $n_data_avaiable  + 1;
+      $n_data_avaiable = $n_data_avaiable  + 1;
 
-} else { # @a is empty
-  print "no data avaible. \n";
-  $n_data_not_avaiable = $n_data_not_avaiable  + 1;
+  } else { # @a is empty
+      print "no data avaible. \n";
+      $n_data_not_avaiable = $n_data_not_avaiable  + 1;
+  }
 }
-}
 
-#### print summary
+################################################################################
+##############  print summary
+################################################################################
 print "\nANALYSIS OF $plat:\n\n";
 print "number of samples of this platform: $n_tot_sample\n";
 print "number of new samples: $n_sample\n";
