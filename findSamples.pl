@@ -71,10 +71,9 @@ if ($args{ '-randpf' } > 0) {
 
   @arraymapPlatforms  =   shuffle(@arraymapPlatforms);
   @arraymapPlatforms  =   splice(@arraymapPlatforms, 0, $args{ '-randpf' });
+  print "-randpf: ".scalar(@arraymapPlatforms)." platforms will be used. \n";
 
 }
-
-print "-randpf: ".scalar(@arraymapPlatforms)." platforms will be used. \n";
 
 # print "download all the series...";
 # my %arraymap_series = map{ $_->{ SERIESID } => 1 } (grep{ $_->{ SERIESID } =~ /GSE/ } @{ $mongoSamples });
@@ -92,7 +91,7 @@ print "-randpf: ".scalar(@arraymapPlatforms)." platforms will be used. \n";
 
 The next part first creates an empty array for array ids, which will later be
 matched against the new retrievals.
-If the parameter '-arraymap' is set to "y" (default is "n"), then the array will
+If the parameter '-arraymap' is set to "n" (default), then the array will
 be populated with the existing array ids from arraymap.
 
 =cut
@@ -107,8 +106,8 @@ if ($args{ '-arraymap' } !~ /y/) {
 
   print "getting existing arrayMap array ids...";
 
-  my @arraymapSamples   =   map{ $_->{ UID } } (grep{ $_->{ UID } =~ /^GSM/ } @{ $mongoSamples });
-  @arraymapSamples      =   uniq(@arraymapSamples);
+  my @arraymapSamples =   map{ $_->{ UID } } (grep{ $_->{ UID } =~ /^GSM/ } @{ $mongoSamples });
+  @arraymapSamples    =   uniq(@arraymapSamples);
 
   print "done: ".scalar(@arraymapSamples)." arrays found. These will not be retrieved again.\n\n";
 

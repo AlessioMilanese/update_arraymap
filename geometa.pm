@@ -14,7 +14,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
   my $tmpDir          =   $args->{ '-metaroot' }.'/tmp';
   mkdir $tmpDir;
 
-  my $gsmData      =   {};
+  my $gsmData         =   {};
 
   for my $i (0..$#{ $args->{GSMLIST} }) {
 
@@ -54,7 +54,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 
       my $gse         =   ( grep{ /Sample_series_id ?\= ?GSE\d+/ } @metaLines )[0];
       $gse            =~  s/^.*(GSE\d+?)[^\d]*?$/\1/;
-      my $gseDir      =   $tmpDir.'/'.$gsm;
+      my $gseDir      =   $tmpDir;
 
       if ($gse =~ /^GSE\d+?$/) {
 
@@ -85,8 +85,6 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
       _d('no file could be loaded', $file);
 
     }
-
-  	my $metaParsed		=		$sampleDir.'/meta.tab';
 
   }
 
