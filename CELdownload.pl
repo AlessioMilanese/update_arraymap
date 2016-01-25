@@ -17,7 +17,7 @@ print "\033[0;0H"; #jump to 0,0
 $num_args = $#ARGV + 1;
 if ($num_args != 1) {
     print "\nUsage: CELdownload.pl platform_id\n";
-    print "Example: CELdownload.pl GPL2005\n\n";
+    print "Example: CELdownload.pl GPL1266\n\n";
     exit;
 }
 
@@ -109,7 +109,7 @@ foreach my $sample (@GSM_to_download){
 
   #check if the file exists
   my $address = "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=$sample&targ=self&view=brief&form=text";
-  my $info = [ grep{/!Sample_supplementary_file = ftp/} split(/[\n\r]/,get($address))];
+  my $info = [ grep{/!Sample_supplementary_file = ftp.*?\.CEL\.gz.*?/} split(/[\n\r]/,get($address))];
 
   if (@$info) { #if a ftp link exists
     $n_data_avaiable = $n_data_avaiable  + 1;
@@ -170,5 +170,5 @@ foreach my $sample (@GSM_to_download){
 print "\nANALYSIS OF $plat:\n\n";
 print "number of samples of this platform: $n_tot_sample\n";
 print "number of new samples: $n_sample\n";
-print "number of .CEL files downloaded: $n_data_avaiable\n";
+print "number of samples with data: $n_data_avaiable\n";
 print "number of samples without data: $n_data_not_avaiable\n\n";
