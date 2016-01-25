@@ -103,52 +103,65 @@ print "\nDownload the CEL files:\n";
 my $n_data_avaiable = 0;
 my $n_data_not_avaiable = 0;
 my $contatore = 1;
+my $contatore2 = 1;
 
 foreach my $sample (@GSM_to_download){
-
-  ######################       DOWNLOAD THE .CEL.GZ FILE
-  print "($contatore/$n_sample)$sample: download .CEL.gz...";
-  $contatore = $contatore + 1;
 
   #check if the file exists
   my $address = "http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=$sample&targ=self&view=brief&form=text";
   my $info = [ grep{/!Sample_supplementary_file = ftp/} split(/[\n\r]/,get($address))];
 
   if (@$info) { #if a ftp link exists
+    $n_data_avaiable = $n_data_avaiable  + 1;
+  } else { # @a is empty
+    print "no data avaible. \n";
+    $n_data_not_avaiable = $n_data_not_avaiable  + 1;
+  }
+
+  $contatore2 = 1;
+  foreach my $long_address (@$info) { #if a ftp link exists
+      ######################       DOWNLOAD THE .CEL.GZ FILE
 
       #prepare name for the directory of the ftp server (example GSM337nnn)
-      $sample_short = substr("$sample",0,length($sample)-3);
-      $directory_name = $sample_short . "nnn";
+      #$sample_short = substr("$sample",0,length($sample)-3);
+      #$directory_name = $sample_short . "nnn";
+
+      # extract the address
+      $correct_address = substr("$long_address",29);
 
       ### build a File::Fetch object ###
-      my $ff = File::Fetch->new(uri => "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/$directory_name/$sample/suppl/$sample.CEL.gz");
+      #my $ff = File::Fetch->new(uri => "ftp://ftp.ncbi.nlm.nih.gov/geo/samples/$directory_name/$sample/suppl/$sample.CEL.gz");
+      my $ff = File::Fetch->new(uri => "$correct_address");
       ### fetch the uri to cwd() ###
       mkdir $plat;
 
+      my $real_name = $ff->file;
+      my $real_name_short = substr("$real_name",0,length($real_name)-3);
+
+      print "($contatore/$n_sample)[$contatore2]$sample: download $real_name...";
+      $contatore2 = $contatore2 + 1;
       my $where = $ff->fetch()or die $ff->error;
       print "done";
+
+
+
       ######################       EXTRACT THE .CEL FILE
       print "\n           extract the .CEL file...";
 
       ### build an Archive::Extract object ###
-      my $ae = Archive::Extract->new( archive => "$sample.CEL.gz" );
+      my $ae = Archive::Extract->new( archive => "$real_name" );
       ### extract to cwd() ###
       my $ok = $ae->extract or die $ae->error;
 
-      `mv "$sample.CEL" $plat`;
+      `mv "$real_name_short" $plat`;
       print "done";
       ######################       NOW THAT I HAVE .CEL FILE, I DELETE .GZ FILE
       print "\n           delete .gz file...";
 
-      unlink "$sample.CEL.gz" or warn "Could not unlink $sample.CEL.gz";
+      unlink "$real_name" or warn "Could not unlink $sample.CEL.gz";
       print "done\n";
-
-      $n_data_avaiable = $n_data_avaiable  + 1;
-
-  } else { # @a is empty
-      print "no data avaible. \n";
-      $n_data_not_avaiable = $n_data_not_avaiable  + 1;
   }
+  $contatore = $contatore + 1;
 }
 
 ################################################################################
