@@ -17,9 +17,6 @@ print "\033[0;0H"; #jump to 0,0
 
 my @celPlatforms      =   ("GPL6801", "GPL2641", "GPL3718", "GPL3720", "GPL2004", "GPL2005", "GPL1266");
 
-
-my $contator = 0;
-
 my @n_samples;
 
 for (my $i=0; $i <= 20; $i++) {
@@ -27,8 +24,30 @@ for (my $i=0; $i <= 20; $i++) {
   print "$i = $n_samples[$i]\n";
 }
 
-
 print "start\n";
+
+my $gsmIndexFile      =   "/Volumes/arrayRAID/arraymapIn/GEOupdate/gsmdata.tab";
+my @gsmIndex          =   @{ pgFile2list($gsmIndexFile) };
+my @gsmInfoKeys       =   split("\t", shift(@gsmIndex));
+my %gsmInfo;
+
+foreach (@gsmIndex) {
+
+  my @currentGSM      =   split("\t", $_);
+  my $currentGSMmap   =   { map{ $gsmInfoKeys[$_] => $currentGSM[$_] } 0..@#gsmInfoKeys };
+
+_d($currentGSMmap->{GPL}, $currentGSMmap->{GSM});
+
+
+}
+
+exit;
+
+
+foreach my $gpl (@celPlatforms) {
+
+}
+
 
 open my $fh, '<:encoding(UTF-8)', "/Volumes/arrayRAID/arraymapIn/GEOupdate/gsmdata.tab" or die;
 while (my $line = <$fh>) {
@@ -36,17 +55,13 @@ while (my $line = <$fh>) {
         #$file_name =
         #print "$line\n";
         my $strn      =   $line;
-        $strn         =~  m/(\/Volumes.*?soft)/;
+        $strn         =~  m/^|\t(\/Volumes.*?soft)\t|$/;
         $address      =   $1;
 
         open my $ff, '<:encoding(UTF-8)', $address or die;
-        $contator = 0;
-        while (my $line2 = <$ff>) {
-            if ($line2 =~ /!Sample_supplementary_file = ftp.*?\.CEL\.gz.*?/){
-               $contator = $contator + 1;
-            }
-        }
+        my $contator  =   grep{ /!Sample_supplementary_file = ftp.*?\.CEL\.gz.*?/ } <$ff>;
         $n_samples[$contator] = $n_samples[$contator] +1;
+
     }
 }
 
