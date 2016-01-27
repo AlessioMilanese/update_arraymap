@@ -16,13 +16,9 @@ print "\033[0;0H"; #jump to 0,0
 # platforms: "GPL6801", "GPL2641", "GPL3718", "GPL3720", "GPL2004", "GPL2005", "GPL1266"
 
 my @celPlatforms      =   ("GPL6801", "GPL2641", "GPL3718", "GPL3720", "GPL2004", "GPL2005", "GPL1266");
+#my @celPlatforms      =   ("GPL3718");
 
 my @n_samples;
-
-for (my $i=0; $i <= 20; $i++) {
-  $n_samples[$i] = 0;
-  print "$i = $n_samples[$i]\n";
-}
 
 print "start\n";
 
@@ -34,37 +30,42 @@ my %gsmInfo;
 foreach (@gsmIndex) {
 
   my @currentGSM      =   split("\t", $_);
-  my $currentGSMmap   =   { map{ $gsmInfoKeys[$_] => $currentGSM[$_] } 0..@#gsmInfoKeys };
+  my $currentGSMmap   =   { map{ $gsmInfoKeys[$_] => $currentGSM[$_] } 0..$#gsmInfoKeys };
 
-_d($currentGSMmap->{GPL}, $currentGSMmap->{GSM});
+  if (any { $currentGSMmap->{GPL} eq $_ } @celPlatforms) {
 
+    $gsmInfo{ $currentGSMmap->{GSM} } =   $currentGSMmap;
 
-}
-
-exit;
-
-
-foreach my $gpl (@celPlatforms) {
+  }
 
 }
 
+_d(scalar keys %gsmInfo, 'GSM have been found for any of', @celPlatforms);
 
-open my $fh, '<:encoding(UTF-8)', "/Volumes/arrayRAID/arraymapIn/GEOupdate/gsmdata.tab" or die;
-while (my $line = <$fh>) {
-    if (any { $line =~ /$_/ } @celPlatforms) {
-        #$file_name =
-        #print "$line\n";
-        my $strn      =   $line;
-        $strn         =~  m/^|\t(\/Volumes.*?soft)\t|$/;
-        $address      =   $1;
+foreach my $gsm (sort keys %gsmInfo) {
 
-        open my $ff, '<:encoding(UTF-8)', $address or die;
-        my $contator  =   grep{ /!Sample_supplementary_file = ftp.*?\.CEL\.gz.*?/ } <$ff>;
-        $n_samples[$contator] = $n_samples[$contator] +1;
+  open my $ff, '<:encoding(UTF-8)', $gsmInfo{ $gsm }->{FILE} or die;
+  my @ftpFiles        =   grep{ /Sample_supplementary_file = ftp.*?\.CEL\.gz.*?/ } <$ff>;
+  chomp @ftpFiles;
+  foreach my $ftpCELfile (@ftpFiles) {
+    $ftpCELfile       =~  s/^.*?\= (ftp.*?\.CEL\.gz).*?$/$1/;
+#    $ftpCELfile       =~  s/[^\w\:\.\/]//g;
+    push(@{ $gsmInfo{ $gsm }->{CELFILEFTP} }, $ftpCELfile);
 
-    }
+  }
+
+  _d($gsm, scalar @{$gsmInfo{ $gsm }->{CELFILEFTP}}, 'CEL files');
+
 }
 
-for (my $i=0; $i <= 20; $i++) {
-  print "$i = $n_samples[$i]\n";
-}
+my $celInfoFile       =   $gsmIndexFile;
+$celInfoFile          =~  s/\.\w\w\w$/_celfiles.tab/;
+
+pgWriteFile(
+  FILE					    =>	$celInfoFile,
+  CONTENT					  =>	join("\n", map{ join("\t", ($_, $gsmInfo{ $_ }->{GPL}, scalar @{ $gsmInfo{ $_ }->{CELFILEFTP} }, $gsmInfo{ $_ }->{CELFILEFTP}->[0])) } keys %gsmInfo),
+);
+
+_d(scalar(grep{ scalar @{ $gsmInfo{ $_ }->{CELFILEFTP} } == 1 } keys %gsmInfo), 'of', scalar keys %gsmInfo, 'GSM had 1 CEL file');
+_d(scalar(grep{ scalar @{ $gsmInfo{ $_ }->{CELFILEFTP} } > 1 } keys %gsmInfo), 'of', scalar keys %gsmInfo, 'GSM had more than 1 CEL file');
+_d(scalar(grep{ scalar @{ $gsmInfo{ $_ }->{CELFILEFTP} } < 1 } keys %gsmInfo), 'of', scalar keys %gsmInfo, 'GSM had no CEL file');
