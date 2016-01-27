@@ -15,6 +15,7 @@ print "\033[0;0H"; #jump to 0,0
 # platform that we are going to analyze
 # platforms: "GPL6801", "GPL2641", "GPL3718", "GPL3720", "GPL2004", "GPL2005", "GPL1266"
 
+my @celPlatforms      =   ("GPL6801", "GPL2641", "GPL3718", "GPL3720", "GPL2004", "GPL2005", "GPL1266");
 
 
 my $contator = 0;
@@ -31,12 +32,12 @@ print "start\n";
 
 open my $fh, '<:encoding(UTF-8)', "/Volumes/arrayRAID/arraymapIn/GEOupdate/gsmdata.tab" or die;
 while (my $line = <$fh>) {
-    if ($line =~ /GPL6801/ || $line =~ /GPL2641/ || $line =~ /GPL3718/ || $line =~ /GPL3720/ || $line =~ /GPL2004/ || $line =~ /GPL2005/ || $line =~ /GPL1266/) {
+    if (any { $line =~ /$_/ } @celPlatforms) {
         #$file_name =
         #print "$line\n";
-        my $strn = $line;
-        $strn =~ m/(\/Volumes.*?soft)/;
-        $address = $1;
+        my $strn      =   $line;
+        $strn         =~  m/(\/Volumes.*?soft)/;
+        $address      =   $1;
 
         open my $ff, '<:encoding(UTF-8)', $address or die;
         $contator = 0;
