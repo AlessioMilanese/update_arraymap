@@ -42,7 +42,7 @@ my %gsmInfo;
 
 my $arraymapGPL       =   [];
 
-if ($args{ '-arraymap' } !~ /y/) {
+if ($args{ '-arraymap' } !~ /y/i) {
 
   _d('looking up arraymap for existing samples');
 
@@ -93,12 +93,13 @@ foreach my $gsm (sort keys %gsmInfo) {
 
 }
 
+my $amMarker          =   $args{ '-arraymap' } =~ /y/i ? 'with_arraymap' : q{};
 my $celInfoFile       =   $gsmIndexFile;
-$celInfoFile          =~  s/\.\w\w\w$/_celfiles.tab/;
+$celInfoFile          =~  s/\.\w\w\w$/_celfiles_$amMarker.tab/;
 
 pgWriteFile(
-  FILE					    =>	$celInfoFile,
-  CONTENT					  =>	join("\n", map{ join("\t", ($_, $gsmInfo{ $_ }->{GPL}, scalar @{ $gsmInfo{ $_ }->{CELFILEFTP} }, $gsmInfo{ $_ }->{CELFILEFTP}->[0])) } keys %gsmInfo),
+  FILE					      =>	$celInfoFile,
+  CONTENT					    =>	join("\n", map{ join("\t", ($_, $gsmInfo{ $_ }->{GSE}, $gsmInfo{ $_ }->{GPL}, scalar @{ $gsmInfo{ $_ }->{CELFILEFTP} }, $gsmInfo{ $_ }->{CELFILEFTP}->[0])) } sort keys %gsmInfo),
 );
 
 _d(scalar(grep{ scalar @{ $gsmInfo{ $_ }->{CELFILEFTP} } == 1 } keys %gsmInfo), 'of', scalar keys %gsmInfo, 'GSM had 1 CEL file');
