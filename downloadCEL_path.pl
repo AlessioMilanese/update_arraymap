@@ -9,13 +9,10 @@ use PG;
 use LWP::Simple;
 STDOUT->autoflush(1);
 
-# TODO file that contains the info of GMSid GSEid GPLid ftp_link:
-# TODO /Volumes/arrayRAID/arraymapIn/GEOupdate/gsmdata_celfiles.tab
+# file that contains the info of GMSid GSEid GPLid ftp_link:
+# /Volumes/arrayRAID/arraymapIn/GEOupdate/gsmdata_celfiles.tab
 open my $ff, '<:encoding(UTF-8)', "/Volumes/arrayRAID/arraymapIn/GEOupdate/gsmdata_celfiles.tab" or die;
 
-# TODO: create correct path
-# TODO: check if a sample is already downloaded
-mkdir "prova_d";
 
 foreach my $ftpCELfile (grep{ /ftp.*?\.CEL\.gz.*?/ } <$ff>) {
 
@@ -24,27 +21,40 @@ foreach my $ftpCELfile (grep{ /ftp.*?\.CEL\.gz.*?/ } <$ff>) {
   $gse = @info[1];
   $gpl = @info[2];
   $address = @info[4];
+  print gmtime()."::$gsm $gse $gpl :: ";
 
-  # download the tar.gz
-  print "$gsm $gse $gpl $address\n";
-  my $fh = File::Fetch->new(uri => "$address");
-  my $where = $fh->fetch()or die $ff->error;
-  # name of the file downloaded
-  my $real_name = $fh->file;
-  my $real_name_short = substr("$real_name",0,length($real_name)-3);
+  my $file = $gse.'/'.$gpl.'/'.$gsm.'.CEL';
 
-  #extract the CEL file from the archive
-  my $ae = Archive::Extract->new( archive => "$real_name" );
-  my $ok = $ae->extract or die $ae->error;
+  if ( # check if the file is already present
+    ! -f $file
+    ||
+    $args->{ '-force' } =~ /^y/
+    ) {
+    print "downloading\n";
 
-  #delete the archive
-  unlink "$real_name" or warn "Could not unlink $gsm.CEL.gz";
+    # download the tar.gz
+    my $fh = File::Fetch->new(uri => "$address");
+    my $where = $fh->fetch()or die $ff->error;
+    # name of the file downloaded
+    my $real_name = $fh->file;
+    my $real_name_short = substr("$real_name",0,length($real_name)-3);
 
-  #rename the CEL file
-  `mv "$real_name_short" $gsm.CEL`;
+    #extract the CEL file from the archive
+    my $ae = Archive::Extract->new( archive => "$real_name" );
+    my $ok = $ae->extract or die $ae->error;
 
-  #move the CEL file in the proper directories
+    #delete the archive
+    unlink "$real_name" or warn "Could not unlink $gsm.CEL.gz";
 
-  `mv $gsm.CEL prova_d`;
+    #rename the CEL file
+    `mv "$real_name_short" $gsm.CEL`;
 
+    #move the CEL file in the proper directories
+    $path_dir = $gse.'/'.$gpl;
+    mkdir $gse;
+    mkdir $path_dir;
+    `mv $gsm.CEL $path_dir`;
+    }else{
+        print "file already downloaded\n";
+    }
 }
