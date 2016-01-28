@@ -15,3 +15,4 @@ we divide the work to update the database Arraymap in 4 steps:
 * **n_cel_file.pl**: script to calculate the multiplicity of the CEL files in the sample. Hence: how many samples have 1 CEL file, how many have 2 CEL files, etc.
 * **celfile_review.pl**: as n_cel_file.pl, but can be run only on samples that are not in arraymap
 * **CELdownload.pl**: download all the CEL files of a given platform id
+* **downloadCEL_path.pl**: download all the CEL files that are not on arraymap and puts them in the correct folder
