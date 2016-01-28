@@ -15,22 +15,23 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
   mkdir $tmpDir;
 
   my $gsmData         =   {};
+  my $gseData         =   {};
 
   for my $i (0..$#{ $args->{GSMLIST} }) {
 
     my $gsm           =   $args->{GSMLIST}->[$i];
     my $url						=		$args->{pgP}->{ GEOlink }.$gsm.'&form=text';
-    my $file					=		$tmpDir.'/'.$gsm.'.geometa.soft';
+    my $gsmSoftFile		=		$tmpDir.'/'.$gsm.'.geometa.soft';
 
     if (
-      ! -f $file
+      ! -f $gsmSoftFile
       ||
       $args->{ '-force' } =~ /^y/
     ) {
 
   		_d('trying '.$gsm.' ('.($i+1).'/'.@{ $args->{GSMLIST} }.')');
 
-  		my $status			=		getstore($url, $file);
+  		my $status			=		getstore($url, $gsmSoftFile);
   		_d("no file could be fetched") unless is_success($status);
 
   	}
@@ -43,12 +44,12 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
                             FILE  =>  'NA',
                           };
 
-    if (-f $file) {
+    if (-f $gsmSoftFile) {
 
   		my @metaLines		=		@{
 														pgFile2list(
 															%args,
-															FILE		=>	$file,
+															FILE		=>	$gsmSoftFile,
 														)
 													};
 
@@ -61,6 +62,10 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
         $gseDir       =   $args->{ '-metaroot' }.'/'.$gse;
         mkdir $gseDir;
         $gsmData->{ $gsm }->{GSE} =   $gse;
+        $gseData->{ $gse }  =   {
+                                  GSE   =>  $gse,
+                                  DIR   =>  $gseDir,
+                                };
 
       }
 
@@ -76,13 +81,41 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
       my $gsmDir      =   $gseDir.'/'.$gsm;
       my $gsmSoft     =   $gsmDir.'/geometa.soft';
       mkdir $gsmDir;
-      copy($file, $gsmSoft);
+      copy($gsmSoftFile, $gsmSoft);
 
       $gsmData->{ $gsm }->{FILE}  =   $gsmSoft;
 
   	} else {
 
-      _d('no file could be loaded', $file);
+      _d('no file could be loaded', $gsmSoftFile);
+
+    }
+
+  }
+
+  # GSE
+
+  foreach my $gse (sort keys %{ $gseData }) {
+
+    my $gseSoftFile		=		$tmpDir.'/'.$gse.'.geometa.soft';
+
+    if (
+      ! -f $gseSoftFile
+      ||
+      $args->{ '-force' } =~ /^y/
+    ) {
+
+  		_d('trying '.$gse);
+
+  		my $status			=		getstore($url, $gseSoftFile);
+  		_d("no file could be fetched") unless is_success($status);
+
+  	}
+
+    if (-f $gseSoftFile) {
+
+      copy($gseSoftFile, $gseData->{ $gse }->{ DIR }.'/geometa.soft');
+
 
     }
 
