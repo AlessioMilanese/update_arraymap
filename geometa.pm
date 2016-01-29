@@ -107,6 +107,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 
   		_d('trying '.$gse);
 
+      my $url					=		$args->{pgP}->{ GEOlink }.$gse.'&form=text';
   		my $status			=		getstore($url, $gseSoftFile);
   		_d("no file could be fetched") unless is_success($status);
 
