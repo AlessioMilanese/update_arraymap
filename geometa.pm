@@ -89,9 +89,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 
       _d('no file could be loaded', $gsmSoftFile);
 
-    }
-
-  }
+  }}
 
   # GSE
 
@@ -118,9 +116,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
       copy($gseSoftFile, $gseData->{ $gse }->{ DIR }.'/geometa.soft');
 
 
-    }
-
-  }
+  }}
 
   return $gsmData;
 
