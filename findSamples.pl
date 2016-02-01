@@ -40,6 +40,8 @@ $args{ '-arraymap' }  //= 'n';
 $args{ '-getmeta' }   //= 'y';
 $args{ '-randno' }    //= -1;
 $args{ '-randpf' }    //= -1;
+$args{ '-selpf' }     //= 'GPL11157,GPL16131,GPL18637';
+
 
 $args{pgP}            =   pgSetPaths(%args);
 $args{pgV}            =   setValueDefaults();
@@ -65,7 +67,14 @@ my $mongoSamples      =   pgGetMongoCursor(
 print "download all the platforms...";
 my @arraymapPlatforms =   map{ $_->{ PLATFORMID } }	(grep{ $_->{ PLATFORMID } =~ /GPL/ } @{ $mongoSamples });
 @arraymapPlatforms    =   uniq(@arraymapPlatforms);
-print "done: ".scalar(@arraymapPlatforms)." platforms found. \n";
+print "done: ".@arraymapPlatforms." platforms found. \n";
+
+if ($args{ '-selpf' } =~ /GPL/) {
+
+  push(@arraymapPlatforms , split(',', $args{ '-selpf' }));
+  print "platforms ".$args{ '-selpf' }.' added; now '.@arraymapPlatforms." platforms. \n";
+
+}
 
 if ($args{ '-randpf' } > 0) {
 
