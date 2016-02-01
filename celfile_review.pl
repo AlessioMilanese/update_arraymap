@@ -21,7 +21,7 @@ $args{ '-metaroot' }  //=	'/Volumes/arrayRAID/arraymapIn/GEOmeta';
 $args{ '-arraymap' }  //= 'n';
 $args{ '-getmeta' }   //= 'n';
 $args{ '-randno' }    //= -1;
-$args{ '-gpl' }       //= "GPL6801,GPL2641,GPL3718,GPL3720,GPL2004,GPL2005,GPL1266";
+$args{ '-gpl' }       //= "GPL6801,GPL2641,GPL3718,GPL3720,GPL2004,GPL2005,GPL1266,GPL11157,GPL16131,GPL18637";
 
 $args{pgP}            =   pgSetPaths(%args);
 $args{pgV}            =   setValueDefaults();
