@@ -93,9 +93,10 @@ foreach my $gsm (sort keys %gsmInfo) {
 
 }
 
-my $amMarker          =   $args{ '-arraymap' } =~ /y/i ? 'with_arraymap' : q{};
+my $amMarker          =   $args{ '-arraymap' } =~ /y/i ? '_with_arraymap' : q{};
 my $celInfoFile       =   $gsmIndexFile;
-$celInfoFile          =~  s/\.\w\w\w$/_celfiles_$amMarker.tab/;
+$celInfoFile          =~  s/\.\w\w\w$//;
+$celInfoFile          .=  '_celfiles'.$amMarker.'.tab';
 
 pgWriteFile(
   FILE					      =>	$celInfoFile,
