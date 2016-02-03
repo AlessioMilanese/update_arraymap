@@ -10,8 +10,9 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 
   $args->{GSMLIST}    //= [ qw(GSM487790 GSM117207) ];
   $args->{pgP}->{ GEOlink } //= 'http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=';
+  $args->{ '-logdir' }//= $args{ '-metaroot' };
 
-  my $tmpDir          =   $args->{ '-metaroot' }.'/tmp';
+  my $tmpDir          =   $args->{ '-logdir' }.'/tmp';
   mkdir $tmpDir;
 
   my $gsmData         =   {};
@@ -59,7 +60,7 @@ http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM487790&form=text
 
       if ($gse =~ /^GSE\d+?$/) {
 
-        $gseDir       =   $args->{ '-metaroot' }.'/'.$gse;
+        $gseDir       =   $args->{ '-geometadir' }.'/'.$gse;
         mkdir $gseDir;
         $gsmData->{ $gsm }->{GSE} =   $gse;
         $gseData->{ $gse }  =   {

@@ -21,9 +21,13 @@ use Archive::Tar;
 use IO::Handle;
 STDOUT->autoflush(1);
 
-print "\n--------------------------------------------------------------------\n";
-print "FIND THE SAMPLES/SERIES/PLATTFORMS IN ARRAYMAP.\n";
-print "--------------------------------------------------------------------\n\n";
+print <<END;
+
+--------------------------------------------------------------------------------
+FIND THE SAMPLES/SERIES/PLATTFORMS IN ARRAYMAP
+--------------------------------------------------------------------------------
+
+END
 
 my $start_time        =   [Time::HiRes::gettimeofday()];
 
@@ -115,7 +119,7 @@ if ($args{ '-arraymap' } !~ /y/) {
 
   print "getting existing arrayMap array ids...";
 
-  my @arraymapSamples =   map{ $_->{ UID } } (grep{ $_->{ UID } =~ /^GSM/ } @{ $mongoSamples });
+  @arraymapSamples    =   map{ $_->{ UID } } (grep{ $_->{ UID } =~ /^GSM/ } @{ $mongoSamples });
   @arraymapSamples    =   uniq(@arraymapSamples);
 
   print "done: ".scalar(@arraymapSamples)." arrays found. These will not be retrieved again.\n\n";
