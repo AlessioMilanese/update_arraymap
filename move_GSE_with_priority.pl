@@ -75,6 +75,37 @@ foreach my $gse (sort @from_dirs){
     print "$gse :: cancer :: copy...";
     # copy the files
     `cp -R "$from_root/$gse" "$dest_root/$gse" `;
+
+    # rename the plat directories
+    $temp_dir = "$dest_root/$gse";
+    opendir my $dhh, $temp_dir
+      or die "$0: opendir: $!";
+    my @temp_plat = grep {-d "$temp_dir/$_" && ! /^\.{1,2}$/} readdir($dhh);
+    foreach my $plat (sort @temp_plat){
+      $temp_dest = $plat_name{"$plat"};
+      `mv "$dest_root/$gse/$plat" "$dest_root/$gse/$temp_dest" `;
+
+    # save metadata
+    my $filename = "$dest_root/$gse/info.meta";
+    open(my $fh_m, '>', $filename) or die "Could not open file '$filename' $!";
+
+    print $fh_m "TITLE: ";
+    open my $ff, '<:encoding(UTF-8)', "$meta_root/$gse/geometa.soft" or die;
+    foreach my $meta_info (grep{ /!Series_title/ } <$ff>) {
+      $short_title = substr("$meta_info",16);
+      print $fh_m "$short_title\n";
+    }
+    close $ff;
+    print $fh_m "SUMMARY: \n";
+    open my $fff, '<:encoding(UTF-8)', "$meta_root/$gse/geometa.soft" or die;
+    foreach my $meta_info_2 (grep{ /!Series_summary/ } <$fff>) {
+      $short_sum = substr("$meta_info_2",18);
+      print $fh_m "$short_sum";
+    }
+    close $fff;
+    close $fh_m;
+    }
+
     print "done\n";
   }else{
     print "$gse :: not cancer\n";
