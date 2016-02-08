@@ -18,6 +18,23 @@ my $meta_root = "/Users/alessio/Desktop/GEOmeta";
 my $from_root = "/Users/alessio/Desktop/from"; #from where to copy data
 my $dest_root = "/Users/alessio/Desktop/to"; #destination
 
+
+#-------------------------------------------------------------------------------
+#------------------------  PLAT NAMES
+#-------------------------------------------------------------------------------
+
+%plat_name = ('GPL6801', 'GenomeWideSNP_6',
+              'GPL2641', 'Mapping10K_Xba142',
+              'GPL3718', 'Mapping250K_Nsp',
+              'GPL3720', 'Mapping250K_Sty]',
+              'GPL2004', 'Mapping50K_Hind240',
+              'GPL2005', 'Mapping50K_Xba240',
+              'GPL1266', 'Mapping10K_Xba131',
+              'GPL11157', 'Cytogenetics_Array',
+              'GPL18637', 'CytoScan750K_Array',
+              'GPL16131', 'CytoscanHD_Array');
+
+
 #-------------------------------------------------------------------------------
 #------------------------  COMPUTATION
 #-------------------------------------------------------------------------------
